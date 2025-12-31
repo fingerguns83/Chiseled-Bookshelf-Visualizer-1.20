@@ -8,11 +8,12 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 
+import java.util.Objects;
 import java.util.Optional;
 
 public class BookshelfTools {
     public static ItemStack getItemById(BlockPos pos, int slotNum, PlayerEntity player) {
-        final World world = ChiseledBookshelfVisualizer.serverInstance.getPlayerManager().getPlayer(player.getUuid()).getWorld();
+        final World world = Objects.requireNonNull(ChiseledBookshelfVisualizer.serverInstance.getPlayerManager().getPlayer(player.getUuid())).getEntityWorld();
 
         if (world == null) return null;
         Optional<ChiseledBookshelfBlockEntity> blockEntityOptional = world.getBlockEntity(pos, BlockEntityType.CHISELED_BOOKSHELF);

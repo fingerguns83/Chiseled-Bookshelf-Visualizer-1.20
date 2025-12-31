@@ -39,26 +39,26 @@ public class BookshelfMixin {
     public void bookShelfInspect() {
         if (!ChiseledBookshelfVisualizerClient.modAvailable) return;
 
-        if (client.cameraEntity == null || client.player == null) return;
+        if (client.getCameraEntity() == null || client.player == null) return;
 
-        HitResult hit = client.cameraEntity.raycast(5f, 0f, false);
+        HitResult hit = client.getCameraEntity().raycast(5f, 0f, false);
         final HitResult.Type type = hit.getType();
         if (type != HitResult.Type.BLOCK) return;
         final BlockHitResult blockHitResult = (BlockHitResult) hit;
         BlockPos pos = blockHitResult.getBlockPos();
 
-        Optional<ChiseledBookshelfBlockEntity> optionalChiseledBookshelfBlockEntity = client.player.getWorld().getBlockEntity(pos, BlockEntityType.CHISELED_BOOKSHELF);
+        Optional<ChiseledBookshelfBlockEntity> optionalChiseledBookshelfBlockEntity = client.player.getEntityWorld().getBlockEntity(pos, BlockEntityType.CHISELED_BOOKSHELF);
         if (optionalChiseledBookshelfBlockEntity.isEmpty()) {
             ChiseledBookshelfVisualizerClient.bookShelfData.isCurrentBookDataToggled = false;
             ChiseledBookshelfVisualizerClient.currentBookData = BookData.empty();
             return;
         }
 
-        final BlockState blockState = client.player.getWorld().getBlockState(pos);
+        final BlockState blockState = client.player.getEntityWorld().getBlockState(pos);
 
         ChiseledBookshelfBlock bookshelfBlock = (ChiseledBookshelfBlock) blockState.getBlock();
 
-        OptionalInt optionalInt = ((BookshelfInvoker) bookshelfBlock).invokerGetSlotForHitPos(blockHitResult, blockState);
+        OptionalInt optionalInt = bookshelfBlock.getHitSlot(blockHitResult, client.player.getFacing().getOpposite());
         if (optionalInt.isEmpty()) {
             ChiseledBookshelfVisualizerClient.bookShelfData.isCurrentBookDataToggled = false;
             return;

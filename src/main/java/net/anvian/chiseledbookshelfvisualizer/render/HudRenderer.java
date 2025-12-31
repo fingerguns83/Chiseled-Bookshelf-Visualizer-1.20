@@ -1,19 +1,18 @@
 package net.anvian.chiseledbookshelfvisualizer.render;
 
 import net.anvian.chiseledbookshelfvisualizer.ChiseledBookshelfVisualizerClient;
-import net.anvian.chiseledbookshelfvisualizer.config.*;
 import net.anvian.chiseledbookshelfvisualizer.data.BookData;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.font.*;
 import net.minecraft.client.gui.DrawContext;
-import net.minecraft.client.render.*;
 import net.minecraft.component.DataComponentTypes;
 import net.minecraft.enchantment.Enchantment;
 import net.minecraft.item.ItemStack;
 import net.minecraft.registry.entry.RegistryEntry;
 import net.minecraft.text.Text;
+
 
 @Environment(EnvType.CLIENT)
 public class HudRenderer {
@@ -53,18 +52,19 @@ public class HudRenderer {
                 }
                 // Thanks to justanothercorpusguy on the Fabric project Discord
                 // For explaining matrix scaling for text to multiple people :P
-                context.getMatrices().push();
-                context.getMatrices().scale(scale, scale, 1.0f);
+                context.getMatrices().pushMatrix();
+                context.getMatrices().scale(scale, scale);
 
                 drawScaledCenteredText(context,client.textRenderer,itemStack.getName().getString(), x, y+10,color,scale);
 
 
                 var storedComponents = itemStack.getComponents().get(DataComponentTypes.STORED_ENCHANTMENTS);
+
                 if (storedComponents != null) {
                     int i = (int) (20 * ( scale > 1 ? scale : 1));
                     for (RegistryEntry<Enchantment> enchantment : storedComponents.getEnchantments()) {
-                        drawScaledCenteredText(context, client.textRenderer, enchantment.value().description().getString(), x, y + i, 0xFFCECECE, scale);
-                        i += 10 * ( scale > 1 ? scale : 1);
+                        drawScaledCenteredText(context, client.textRenderer, enchantment.value().description().getString() + toRomanNumeral(storedComponents.getLevel(enchantment), enchantment.value().getMaxLevel()), x, y + i, 0xFFCECECE, scale);
+                        i += (int) (10 * ( scale > 1 ? scale : 1));
                     }
                 }
 
@@ -74,27 +74,52 @@ public class HudRenderer {
                     String authorText = Text.translatable("book.byAuthor", writtenBookContentComponent.author()).getString();
                     drawScaledCenteredText(context, client.textRenderer, authorText, x, y + 20, 0xFFCECECE, scale);
                 }
-                context.getMatrices().pop();
+                context.getMatrices().popMatrix();
             }
         }
     }
     private static void drawScaledCenteredText(DrawContext context, TextRenderer textRenderer, String text, int x, int y, int color, float scale) {
         int textWidth = textRenderer.getWidth(text);
+
+        context.getMatrices().pushMatrix();
+        context.getMatrices().scale(scale, scale);
+
         float scaledX = x / scale - (textWidth / 2f);
         float scaledY = y / scale;
 
-        textRenderer.draw(
+        context.drawText(
+                textRenderer,
                 text,
-                scaledX,
-                scaledY,
+                (int) scaledX,
+                (int) scaledY,
                 color,
-                true,
-                context.getMatrices().peek().getPositionMatrix(),
-                context.getVertexConsumers(),
-                TextRenderer.TextLayerType.NORMAL,
-                0,
-                LightmapTextureManager.MAX_LIGHT_COORDINATE,
-                false
+                true
         );
+
+        context.getMatrices().popMatrix();
+    }
+
+    public static String toRomanNumeral(Integer level, Integer maxLevel) {
+        String output = "";
+        if (maxLevel == 1){
+            return output;
+        }
+        switch (level) {
+            case 4:
+                output += "I";
+            case 5:
+                output += "V";
+                break;
+            case 3:
+                output += "I";
+            case 2:
+                output += "I";
+            case 1:
+                output += "I";
+                break;
+            default:
+                output = level.toString();
+        }
+        return " " + output;
     }
 }

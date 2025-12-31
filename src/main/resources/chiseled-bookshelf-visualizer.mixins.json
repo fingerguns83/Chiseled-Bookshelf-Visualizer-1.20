@@ -7,7 +7,6 @@
   ],
   "client": [
     "InGameHudMixin",
-    "BookshelfInvoker",
     "BookshelfMixin"
   ],
   "injectors": {
